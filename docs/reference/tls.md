@@ -153,3 +153,27 @@ Default: not specified
 
 Present the specified certificate when server requests a client certificate.
 Files should use PEM format. Both directives should be specified.
+
+---
+
+### hostnames _domains..._
+Default: not specified
+
+Used to specify the hostnames available when the client sends a TLS handshake, to prevent some scanning tools or websites (such as censys) from exposing the domain name of the server's certificate information when scanning through IP. （When the mx DNS record is configured as ip, it needs to be set to ip address, or not configured, because this configuration will be meaningless.）
+
+---
+
+### tls_verify_hostname _bool_
+
+Default: not specified
+
+Whether to enable verification of the server name specified when the client performs tls handshake.
+
+example:
+
+```
+tls file cert.pem key.pem {
+    hostnames $(hostname)
+    tls_verify_hostname true
+}
+```

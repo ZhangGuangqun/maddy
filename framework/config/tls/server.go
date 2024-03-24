@@ -20,6 +20,7 @@ package tls
 
 import (
 	"crypto/tls"
+	"fmt"
 
 	"github.com/foxcpp/maddy/framework/config"
 	modconfig "github.com/foxcpp/maddy/framework/config/module"
@@ -28,8 +29,10 @@ import (
 )
 
 type TLSConfig struct {
-	loader  module.TLSLoader
-	baseCfg *tls.Config
+	loader            module.TLSLoader
+	baseCfg           *tls.Config
+	hostnames         []string
+	tlsVerifyHostname bool
 }
 
 func (cfg *TLSConfig) Get() (*tls.Config, error) {
@@ -63,9 +66,23 @@ func TLSDirective(m *config.Map, node config.Node) (interface{}, error) {
 
 	return &tls.Config{
 		GetConfigForClient: func(hello *tls.ClientHelloInfo) (*tls.Config, error) {
+			if cfg.tlsVerifyHostname && cfg.hostnames != nil {
+				if !sliceContains(&cfg.hostnames, hello.ServerName) {
+					return nil, fmt.Errorf("certificate is not valid for the host: %s", hello.ServerName)
+				}
+			}
 			return cfg.Get()
 		},
 	}, nil
+}
+
+func sliceContains(s *[]string, str string) bool {
+	for _, v := range *s {
+		if v == str {
+			return true
+		}
+	}
+	return false
 }
 
 func readTLSBlock(globals map[string]interface{}, blockNode config.Node) (*TLSConfig, error) {
@@ -106,6 +123,14 @@ func readTLSBlock(globals map[string]interface{}, blockNode config.Node) (*TLSCo
 		return nil, nil
 	}, TLSCurvesDirective, &baseCfg.CurvePreferences)
 
+	var (
+		hostnames         []string
+		tlsVerifyHostname bool
+	)
+
+	childM.StringList("hostnames", false, false, nil, &hostnames)
+	childM.Bool("tls_verify_hostname", false, false, &tlsVerifyHostname)
+
 	if _, err := childM.Process(); err != nil {
 		return nil, err
 	}
@@ -119,7 +144,9 @@ func readTLSBlock(globals map[string]interface{}, blockNode config.Node) (*TLSCo
 	log.Debugf("tls: min version: %x, max version: %x", tlsVersions[0], tlsVersions[1])
 
 	return &TLSConfig{
-		loader:  loader,
-		baseCfg: &baseCfg,
+		loader:            loader,
+		baseCfg:           &baseCfg,
+		hostnames:         hostnames,
+		tlsVerifyHostname: tlsVerifyHostname,
 	}, nil
 }
