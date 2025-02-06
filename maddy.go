@@ -110,15 +110,15 @@ func init() {
 			Value:   filepath.Join(ConfigDirectory, "maddy.conf"),
 		},
 	)
+	maddycli.AddGlobalFlag(&cli.BoolFlag{
+		Name:        "debug",
+		Usage:       "enable debug logging early",
+		Destination: &log.DefaultLogger.Debug,
+	})
 	maddycli.AddSubcommand(&cli.Command{
 		Name:  "run",
 		Usage: "Start the server",
 		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:        "debug",
-				Usage:       "enable debug logging early",
-				Destination: &log.DefaultLogger.Debug,
-			},
 			&cli.StringFlag{
 				Name:        "libexec",
 				Value:       DefaultLibexecDirectory,
@@ -284,7 +284,7 @@ func ensureDirectoryWritable(path string) error {
 		return err
 	}
 	testFile.Close()
-	return os.Remove(testFile.Name())
+	return os.RemoveAll(testFile.Name())
 }
 
 func ReadGlobals(cfg []config.Node) (map[string]interface{}, []config.Node, error) {
@@ -385,7 +385,6 @@ func RegisterModules(globals map[string]interface{}, nodes []config.Node) (endpo
 			return nil, nil, err
 		}
 
-		block := block
 		module.RegisterInstance(inst, config.NewMap(globals, block))
 		for _, alias := range modAliases {
 			if module.HasInstance(alias) {
