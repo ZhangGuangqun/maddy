@@ -168,6 +168,6 @@ require (
 
 replace github.com/emersion/go-imap => github.com/foxcpp/go-imap v1.0.0-beta.1.0.20220623182312-df940c324887
 
-replace github.com/emersion/go-smtp => github.com/foxcpp/go-smtp v1.21.4-0.20250124171104-c8519ae4fb23 // v1.21.3+maddy.1
+replace github.com/emersion/go-smtp => github.com/ZhangGuangqun/go-smtp v0.21.4-0.20250309091747-396c3b899882 // v0.21-maddy
 
 replace github.com/libdns/gandi => github.com/foxcpp/libdns-gandi v1.0.4-0.20240127130558-4782f9d5ce3e // v1.0.3+maddy.1
